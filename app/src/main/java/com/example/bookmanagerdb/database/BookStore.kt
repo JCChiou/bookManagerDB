@@ -14,4 +14,5 @@ data class BookStore (
 
     @ColumnInfo(name = "book_price")
     var bookPrice: Int
+
     )
