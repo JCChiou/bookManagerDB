@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">bookManagerDB</string>
+    <string name="modify">修改</string>
+    <string name="query">查詢</string>
+    <string name="delete">刪除</string>
+    <string name="add">新增</string>
+    <string name="hint_price">請輸入價格</string>
+    <string name="Hint_bookname">請輸入書名</string>
+    <string name="text_price">價格 :</string>
+    <string name="text_bookname">書名 :</string>
+
+</resources>
