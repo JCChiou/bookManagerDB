@@ -9,17 +9,19 @@ import androidx.room.Update
 interface BookStoreDao {
 
     @Insert
-    fun insert(bookName: BookStore)
+    suspend fun insert(bookName: BookStore)
 
     @Update
-    fun update(bookName: BookStore)
+    suspend fun update(bookName: BookStore)
 
     @Query("SELECT * from my_bookstore_table WHERE _id = :key")
-    fun get(key: Int): BookStore?
+    suspend fun get(key: Int): BookStore?
 
     @Query("DELETE FROM my_bookstore_table")
-    fun clear()
+    suspend fun clear()
 
+    @Query("SELECT * FROM my_bookstore_table")
+    suspend fun getBookList() : BookStore?
 
 
 }
