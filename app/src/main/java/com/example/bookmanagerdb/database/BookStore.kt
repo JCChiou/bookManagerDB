@@ -13,7 +13,7 @@ data class BookStore (
     var bookName: String,
 
     @ColumnInfo(name = "book_price")
-    var bookPrice: Int
+    var bookPrice: String
 
     ){
     @PrimaryKey(autoGenerate = true)

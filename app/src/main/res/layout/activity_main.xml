@@ -61,12 +61,12 @@
             android:layout_marginStart="16dp"
             android:layout_marginLeft="16dp"
             android:layout_marginTop="8dp"
+            android:autofillHints="no"
             android:ems="10"
             android:hint="@string/hint_price"
-            android:inputType="textPersonName"
+            android:inputType="numberSigned|textPersonName"
             app:layout_constraintStart_toEndOf="@+id/textView2"
-            app:layout_constraintTop_toBottomOf="@+id/bookName_input"
-            android:autofillHints="no" />
+            app:layout_constraintTop_toBottomOf="@+id/bookName_input" />
 
         <Button
             android:id="@+id/btn_add"
@@ -119,15 +119,13 @@
             app:layout_constraintTop_toTopOf="@+id/btn_del" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rec_disp"
-            android:layout_width="wrap_content"
+            android:id="@+id/recdisp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btn_add" />
+            app:layout_constraintTop_toBottomOf="@+id/btn_del" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -21,7 +21,7 @@ interface BookStoreDao {
     suspend fun clear()
 
     @Query("SELECT * FROM my_bookstore_table")
-    suspend fun getBookList() : BookStore?
+    suspend fun getBookList() : List<BookStore>?
 
 
 }
