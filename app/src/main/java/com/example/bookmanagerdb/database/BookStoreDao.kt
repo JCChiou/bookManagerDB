@@ -1,9 +1,6 @@
 package com.example.bookmanagerdb.database
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 
 @Dao
 interface BookStoreDao {
@@ -23,5 +20,7 @@ interface BookStoreDao {
     @Query("SELECT * FROM my_bookstore_table")
     suspend fun getBookList() : List<BookStore>?
 
+    @Delete
+    suspend fun delete(data: BookStore)
 
 }
