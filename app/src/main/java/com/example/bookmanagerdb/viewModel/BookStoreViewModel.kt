@@ -25,14 +25,23 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     val isClick : LiveData<Boolean>
         get() = _isClick
 
+    // 儲存click item目標資料
     private var _onClickPositionData = MutableLiveData<BookStore>()
     val onClickPositionData: LiveData<BookStore>
         get() = _onClickPositionData
 
+    private var _readyToModifyData = MutableLiveData<BookStore>()
+    val readyToModifyData : LiveData<BookStore>
+        get() = _readyToModifyData
+
+    private var _actionFinsihed = MutableLiveData<Boolean>()
+    val actionFinished: LiveData<Boolean>
+        get() = _actionFinsihed
 
     init {
         initializeBookList()
         _isClick.value = false
+        _actionFinsihed.value = false
 
     }
 
@@ -40,7 +49,7 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     private fun initializeBookList(){
         viewModelScope.launch {
             _myBookList.value = getBookListFromDatabase()
-
+            _actionFinsihed.value = false
         }
     }
 
@@ -48,6 +57,11 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         val booklist = database.getBookList()
         Log.d("我的資料庫列表= ", "$booklist")
         return booklist
+    }
+
+    private fun modifyDataTemp(): BookStore? {
+        _readyToModifyData.value = onClickPositionData.value
+        return _readyToModifyData.value
     }
 
     fun showBooklist(){
@@ -71,12 +85,36 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         }
     }
 
+    fun btnModify(data: BookStore){
+        val getModifyRes = modifyDataTemp()
+        if (getModifyRes != null) {
+            data.bookName.let {
+                getModifyRes.bookName = it
+            }
+            data.bookPrice.let {
+                getModifyRes.bookPrice = it
+            }
+        }
+        Log.d("after =", "$getModifyRes")
+
+        viewModelScope.launch {
+            if (getModifyRes != null) {
+                updateBookListToDataBase(getModifyRes)
+            }
+        }
+    }
+
+    fun refreshUI(){
+        showBooklist()
+    }
+
     /** RecyclerView Item click event */
     fun onRecyclerItemClick(cPosition: Int){
         _isClick.value = true
         _myBookList.value?.get(cPosition)?.let {
             _onClickPositionData.value = it
         }
+        _isClick.value = false
     }
 
     fun dipClickItem(){
@@ -89,14 +127,22 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
 
 
     private suspend fun deleteBookListFromDataBase(){
-//        database.clear()
         onClickPositionData.value?.let {
             database.delete(it)
         }
+        //
+        _actionFinsihed.value = true
     }
 
     private suspend fun addNewBookToDb(data: BookStore){
         database.insert(data)
+        _actionFinsihed.value = true
+    }
+
+    private suspend fun updateBookListToDataBase(data :BookStore){
+        database.update(data)
+        _actionFinsihed.value = true
+
     }
 
 }

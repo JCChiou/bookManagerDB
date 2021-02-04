@@ -6,10 +6,10 @@ import androidx.room.*
 interface BookStoreDao {
 
     @Insert
-    suspend fun insert(bookName: BookStore)
+    suspend fun insert(item: BookStore)
 
     @Update
-    suspend fun update(bookName: BookStore)
+    suspend fun update(item: BookStore) : Int
 
     @Query("SELECT * from my_bookstore_table WHERE _id = :key")
     suspend fun get(key: Int): BookStore?
@@ -21,6 +21,9 @@ interface BookStoreDao {
     suspend fun getBookList() : List<BookStore>?
 
     @Delete
-    suspend fun delete(data: BookStore)
+    suspend fun delete(item: BookStore)
+
+    @Query("UPDATE my_bookstore_table SET book_name = :name , book_price = :price WHERE _id = :id")
+    suspend fun modify(name:String, price:String,id:Int)
 
 }
