@@ -23,7 +23,10 @@ interface BookStoreDao {
     @Delete
     suspend fun delete(item: BookStore)
 
-    @Query("UPDATE my_bookstore_table SET book_name = :name , book_price = :price WHERE _id = :id")
-    suspend fun modify(name:String, price:String,id:Int)
+    @Query("SELECT * FROM my_bookstore_table WHERE book_name LIKE  '%' ||:name || '%' OR book_price LIKE '%' || :price || '%' ")
+    suspend fun search(name: String , price: String) : List<BookStore>
+
+//    @Query("UPDATE my_bookstore_table SET book_name = :name , book_price = :price WHERE _id = :id")
+//    suspend fun modify(name:String, price:String,id:Int)
 
 }

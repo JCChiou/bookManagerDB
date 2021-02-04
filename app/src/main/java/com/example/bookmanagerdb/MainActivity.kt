@@ -51,15 +51,24 @@ class MainActivity : AppCompatActivity() {
         // click "新增"
         binding.btnAdd.setOnClickListener {
             //action to do
-            val getContext = getInputData()
-            bookStoreViewModel.btnadd(getContext[0], getContext[1])
+            val getEditInputData = inPutData()
+            bookStoreViewModel.btnadd(getEditInputData.bookName, getEditInputData.bookPrice)
             Toast.makeText(this,"click", Toast.LENGTH_SHORT).show()
+            binding.bookNameInput.text = null
+            binding.bookPriceInput.text = null
         }
 
         // click "查詢"
         binding.btnQuery.setOnClickListener {
             //action to do
-            bookStoreViewModel.showBooklist()
+            val getInputdata = inPutData()
+            if (getInputdata.bookName.isEmpty() && getInputdata.bookPrice.isEmpty()){
+                // if input is null
+                bookStoreViewModel.showBooklist()
+            } else{
+
+                bookStoreViewModel.searchDataBase(getInputdata)
+            }
         }
 
         // click "刪除"
@@ -129,18 +138,9 @@ class MainActivity : AppCompatActivity() {
             }
         })
     }
-    private fun getInputData(): List<String>{
-        val getString = mutableListOf<String>()
-        val getBookName: Editable? = binding.bookNameInput.text
-        val getBookPrice: Editable? = binding.bookPriceInput.text
-        getString.add(getBookName.toString())
-        getString.add(getBookPrice.toString())
-        return getString
-    }
+
 
     private fun inPutData():BookStore{
-        val getString = mutableListOf<String>()
-
         val getBookName: Editable? = binding.bookNameInput.text
         val getBookPrice: Editable? = binding.bookPriceInput.text
         return BookStore(getBookName.toString(),getBookPrice.toString())

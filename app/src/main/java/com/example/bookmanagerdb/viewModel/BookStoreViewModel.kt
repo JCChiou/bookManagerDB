@@ -16,24 +16,27 @@ import kotlinx.coroutines.launch
 
 class BookStoreViewModel (val database: BookStoreDao, application: Application): AndroidViewModel(application){
 
-    //儲存所有book資料
+    //儲存Query database的bookList資料
     private var _myBookList = MutableLiveData<List<BookStore>?>()
     val myBookList : LiveData<List<BookStore>?>
         get() = _myBookList
 
+    //Recycler view click event flag
     private var _isClick = MutableLiveData<Boolean>()
     val isClick : LiveData<Boolean>
         get() = _isClick
 
-    // 儲存click item目標資料
+    // 儲存click Recycler View的item目標資料
     private var _onClickPositionData = MutableLiveData<BookStore>()
     val onClickPositionData: LiveData<BookStore>
         get() = _onClickPositionData
 
+    // Recycler View click item 資料 暫存於這邊作為"修改"的依據
     private var _readyToModifyData = MutableLiveData<BookStore>()
     val readyToModifyData : LiveData<BookStore>
         get() = _readyToModifyData
 
+    // 完成資料庫動作要執行refreshUI 的flag
     private var _actionFinsihed = MutableLiveData<Boolean>()
     val actionFinished: LiveData<Boolean>
         get() = _actionFinsihed
@@ -42,32 +45,18 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         initializeBookList()
         _isClick.value = false
         _actionFinsihed.value = false
-
-    }
-
-
-    private fun initializeBookList(){
-        viewModelScope.launch {
-            _myBookList.value = getBookListFromDatabase()
-            _actionFinsihed.value = false
-        }
-    }
-
-    private suspend fun getBookListFromDatabase(): List<BookStore>?{
-        val booklist = database.getBookList()
-        Log.d("我的資料庫列表= ", "$booklist")
-        return booklist
-    }
-
-    private fun modifyDataTemp(): BookStore? {
-        _readyToModifyData.value = onClickPositionData.value
-        return _readyToModifyData.value
     }
 
     fun showBooklist(){
         viewModelScope.launch {
             // select * from  my_bookstore_table
             initializeBookList()
+        }
+    }
+
+    fun searchDataBase(data: BookStore){
+        viewModelScope.launch {
+            searchBookListFromDataBase(data)
         }
     }
 
@@ -95,7 +84,6 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
                 getModifyRes.bookPrice = it
             }
         }
-        Log.d("after =", "$getModifyRes")
 
         viewModelScope.launch {
             if (getModifyRes != null) {
@@ -125,12 +113,29 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         _isClick.value = false
     }
 
+    //初始化->獲取資料庫所有資料
+    private fun initializeBookList(){
+        viewModelScope.launch {
+            _myBookList.value = getBookListFromDatabase()
+            _actionFinsihed.value = false
+        }
+    }
+
+    private suspend fun getBookListFromDatabase(): List<BookStore>?{
+        val booklist = database.getBookList()
+        Log.d("我的資料庫列表= ", "$booklist")
+        return booklist
+    }
+
+    private fun modifyDataTemp(): BookStore? {
+        _readyToModifyData.value = onClickPositionData.value
+        return _readyToModifyData.value
+    }
 
     private suspend fun deleteBookListFromDataBase(){
         onClickPositionData.value?.let {
             database.delete(it)
         }
-        //
         _actionFinsihed.value = true
     }
 
@@ -142,7 +147,11 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     private suspend fun updateBookListToDataBase(data :BookStore){
         database.update(data)
         _actionFinsihed.value = true
-
     }
 
+    private suspend fun searchBookListFromDataBase(data: BookStore){
+        val namestring = database.search(data.bookName , data.bookPrice)
+        _myBookList.value = namestring
+        Log.d("return =", "$namestring")
+    }
 }
