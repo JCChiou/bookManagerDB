@@ -52,7 +52,8 @@ class MainActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             //action to do
             val getEditInputData = inPutData()
-            bookStoreViewModel.btnadd(getEditInputData.bookName, getEditInputData.bookPrice)
+            bookStoreViewModel.btnadd(getEditInputData)
+//            bookStoreViewModel.btnadd(getEditInputData)
             Toast.makeText(this,"click", Toast.LENGTH_SHORT).show()
             binding.bookNameInput.text = null
             binding.bookPriceInput.text = null
@@ -63,24 +64,30 @@ class MainActivity : AppCompatActivity() {
             //action to do
             val getInputdata = inPutData()
             if (getInputdata.bookName.isEmpty() && getInputdata.bookPrice.isEmpty()){
-                // if input is null
+                // if input is empty
                 bookStoreViewModel.showBooklist()
             } else{
-
+                // if input not empty
                 bookStoreViewModel.searchDataBase(getInputdata)
             }
+            binding.bookNameInput.text = null
+            binding.bookPriceInput.text = null
         }
 
         // click "刪除"
         binding.btnDel.setOnClickListener {
             bookStoreViewModel.btnDelete()
+            binding.bookNameInput.text = null
+            binding.bookPriceInput.text = null
         }
 
         // click "修改"
         binding.btnModify.setOnClickListener {
             val modifyString = inPutData()
-
             bookStoreViewModel.btnModify(modifyString)
+
+            binding.bookNameInput.text = null
+            binding.bookPriceInput.text = null
         }
 
         //click RecyclerView Item
@@ -123,6 +130,7 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        })
 
+        // when RecyclerView item點擊後 更新資料於EditText
         bookStoreViewModel.onClickPositionData.observe(this, Observer { newPosData ->
             Log.d("click data = ", "$newPosData")
             binding.bookNameInput.setText(newPosData.bookName)
@@ -139,7 +147,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-
+    // get EditText data
     private fun inPutData():BookStore{
         val getBookName: Editable? = binding.bookNameInput.text
         val getBookPrice: Editable? = binding.bookPriceInput.text

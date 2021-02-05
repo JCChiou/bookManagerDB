@@ -54,17 +54,15 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         }
     }
 
-    fun searchDataBase(data: BookStore){
+    fun btnadd(newbook: BookStore){
         viewModelScope.launch {
-            searchBookListFromDataBase(data)
+            addNewBookToDb(newbook)
         }
     }
 
-    fun btnadd(name: String?, price: String?){
+    fun searchDataBase(data: BookStore){
         viewModelScope.launch {
-            val newbook = BookStore(name.toString(),price.toString())
-            Log.d("data = ", "$newbook")
-            addNewBookToDb(newbook)
+            searchBookListFromDataBase(data)
         }
     }
 
