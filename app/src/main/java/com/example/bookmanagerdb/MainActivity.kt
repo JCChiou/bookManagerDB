@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         val bookStoreViewModel =
             ViewModelProvider(this, viewModelFactory).get(BookStoreViewModel::class.java)
 
+        binding.bookStoreViewModle = bookStoreViewModel
 
         /** define RecyclerView setting */
         val adapter = BookStoreAdapter()
@@ -52,8 +54,9 @@ class MainActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             //action to do
             val getEditInputData = inPutData()
+
+//            bookStoreViewModel.btnadd()
             bookStoreViewModel.btnadd(getEditInputData)
-//            bookStoreViewModel.btnadd(getEditInputData)
             Toast.makeText(this,"click", Toast.LENGTH_SHORT).show()
             binding.bookNameInput.text = null
             binding.bookPriceInput.text = null
@@ -95,11 +98,11 @@ class MainActivity : AppCompatActivity() {
                 BookStoreAdapter.SingleItemClickListener.OnItemClickListener{
                     override fun onItemClick(view: View?, position: Int) {
                         bookStoreViewModel.onRecyclerItemClick(position)
-                        Toast.makeText(this@MainActivity,"點擊事件觸發", Toast.LENGTH_SHORT ).show()
+//                        Toast.makeText(this@MainActivity,"點擊事件觸發", Toast.LENGTH_SHORT ).show()
                     }
 
                     override fun onItemLongClick(view: View?, position: Int) {
-                        Toast.makeText(this@MainActivity,"長按擊事件觸發", Toast.LENGTH_SHORT ).show()
+//                        Toast.makeText(this@MainActivity,"長按擊事件觸發", Toast.LENGTH_SHORT ).show()
                     }
 
                 }))
@@ -109,6 +112,7 @@ class MainActivity : AppCompatActivity() {
         bookStoreViewModel.myBookList.observe(this, Observer { newList ->
             newList?.let {
                 //更新給adapter的data
+                Log.d("data=", "$it")
                 adapter.data = it
             }
         })
@@ -138,12 +142,29 @@ class MainActivity : AppCompatActivity() {
 //            bookStoreViewModel.dispClickItemFinish()
 
         })
+        // when RecyclerView item點擊後 更新資料於EditText
+        bookStoreViewModel.displayBookEditTextVContent.observe(this, Observer {
+            binding.bookNameInput.setText(it.bookName)
+            binding.bookPriceInput.setText(it.bookPrice)
+
+        })
 
         // action之後 變更flag 執行UI refresh
         bookStoreViewModel.actionFinished.observe(this, Observer { newFinish ->
             if (newFinish){
                 bookStoreViewModel.refreshUI()
             }
+        })
+
+        // editText Name Observer
+        bookStoreViewModel.editTextBookNameContent.observe(this,Observer{
+            Toast.makeText(this@MainActivity,it,Toast.LENGTH_SHORT).show()
+            Log.d("觀察edit", "Okokokok")
+        })
+
+        // editText Price Observer
+        bookStoreViewModel.editTextBookPriceContent.observe(this, Observer{
+            Toast.makeText(this@MainActivity,it,Toast.LENGTH_SHORT).show()
         })
     }
 

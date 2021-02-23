@@ -4,8 +4,7 @@ import android.app.Application
 import android.text.Editable
 import android.util.Log
 import android.widget.EditText
-import androidx.databinding.BindingAdapter
-import androidx.databinding.InverseMethod
+import androidx.databinding.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,7 +13,7 @@ import com.example.bookmanagerdb.database.BookStore
 import com.example.bookmanagerdb.database.BookStoreDao
 import kotlinx.coroutines.launch
 
-class BookStoreViewModel (val database: BookStoreDao, application: Application): AndroidViewModel(application){
+class BookStoreViewModel (val database: BookStoreDao, application: Application): AndroidViewModel(application) {
 
     //儲存Query database的bookList資料
     private var _myBookList = MutableLiveData<List<BookStore>?>()
@@ -41,6 +40,32 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     val actionFinished: LiveData<Boolean>
         get() = _actionFinsihed
 
+    /** try two-way binding */
+//    @Bindable
+    val _editTextBookNameContent = MutableLiveData<String>()
+    val editTextBookNameContent: LiveData<String>
+        get() = _editTextBookNameContent
+    val _editTextBookPriceContent = MutableLiveData<String>()
+    val editTextBookPriceContent: LiveData<String>
+        get() = _editTextBookPriceContent
+
+    private val _displayBookEditTextVContent = MutableLiveData<BookStore>()
+    val displayBookEditTextVContent: LiveData<BookStore>
+        get() = _displayBookEditTextVContent
+
+//    private val _displayBPriceEditTextVContent = MutableLiveData<BookStore>()
+//    val displayBPriceEditTextVContent: LiveData<BookStore>
+//        get() = _displayBPriceEditTextVContent
+
+    fun onDisplayEditTextContentClick(){
+        editTextBookNameContent.value.let {
+            _displayBookEditTextVContent.value!!.bookName
+        }
+
+    }
+
+
+    /** ===  */
     init {
         initializeBookList()
         _isClick.value = false
@@ -55,6 +80,7 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     }
 
     fun btnadd(newbook: BookStore){
+//        val newbook = BookStore(editTextBookNameContent.toString(),editTextBookPriceContent.toString())
         viewModelScope.launch {
             addNewBookToDb(newbook)
         }
@@ -74,9 +100,11 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
 
     fun btnModify(data: BookStore){
         val getModifyRes = modifyDataTemp()
+
         if (getModifyRes != null) {
             data.bookName.let {
                 getModifyRes.bookName = it
+
             }
             data.bookPrice.let {
                 getModifyRes.bookPrice = it
@@ -99,6 +127,8 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         _isClick.value = true
         _myBookList.value?.get(cPosition)?.let {
             _onClickPositionData.value = it
+//            _displayBookEditTextVContent.value = it
+
         }
         _isClick.value = false
     }
@@ -152,4 +182,6 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         _myBookList.value = namestring
         Log.d("return =", "$namestring")
     }
+
+
 }
