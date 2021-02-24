@@ -2,8 +2,10 @@ package com.example.bookmanagerdb.viewModel
 
 import android.app.Application
 import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
+import android.widget.Toast
 import androidx.databinding.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -15,15 +17,53 @@ import kotlinx.coroutines.launch
 
 class BookStoreViewModel (val database: BookStoreDao, application: Application): AndroidViewModel(application) {
 
+    /** try two-way binding */
+
+//    companion object{
+//        @BindingAdapter("dataName")
+//        @JvmStatic
+//        // setter
+//        fun setDataName(target: EditText, tetx: String){
+//
+//                target.setText(tetx)
+//        }
+//
+//        @InverseBindingAdapter(attribute = "android:text", event = "TextAttrChanged")
+//        @JvmStatic
+//        //getter
+//        fun getDataName(target: EditText): String{
+//            return target.text.toString()
+//        }
+//
+//        @BindingAdapter("dataNameAttrChanged")
+//        @JvmStatic
+//        fun setListener(target: EditText, listener: InverseBindingListener?){
+//            var txt = ""
+//            target.addTextChangedListener(object : TextWatcher {
+//                override fun afterTextChanged(s: Editable?) {
+//                    if (txt != s.toString()){
+//                        listener?.onChange()
+//                        txt = s.toString()
+//                    }
+//                }
+//
+//                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+//                }
+//
+//                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+//                }
+//
+//            })
+//        }
+//    }
+
+
+
+    /**====*/
     //儲存Query database的bookList資料
     private var _myBookList = MutableLiveData<List<BookStore>?>()
     val myBookList : LiveData<List<BookStore>?>
         get() = _myBookList
-
-    //Recycler view click event flag
-    private var _isClick = MutableLiveData<Boolean>()
-    val isClick : LiveData<Boolean>
-        get() = _isClick
 
     // 儲存click Recycler View的item目標資料
     private var _onClickPositionData = MutableLiveData<BookStore>()
@@ -40,35 +80,13 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     val actionFinished: LiveData<Boolean>
         get() = _actionFinsihed
 
-    /** try two-way binding */
-//    @Bindable
-    val _editTextBookNameContent = MutableLiveData<String>()
-    val editTextBookNameContent: LiveData<String>
-        get() = _editTextBookNameContent
-    val _editTextBookPriceContent = MutableLiveData<String>()
-    val editTextBookPriceContent: LiveData<String>
-        get() = _editTextBookPriceContent
 
-    private val _displayBookEditTextVContent = MutableLiveData<BookStore>()
-    val displayBookEditTextVContent: LiveData<BookStore>
-        get() = _displayBookEditTextVContent
 
-//    private val _displayBPriceEditTextVContent = MutableLiveData<BookStore>()
-//    val displayBPriceEditTextVContent: LiveData<BookStore>
-//        get() = _displayBPriceEditTextVContent
-
-    fun onDisplayEditTextContentClick(){
-        editTextBookNameContent.value.let {
-            _displayBookEditTextVContent.value!!.bookName
-        }
-
-    }
 
 
     /** ===  */
     init {
         initializeBookList()
-        _isClick.value = false
         _actionFinsihed.value = false
     }
 
@@ -80,7 +98,6 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     }
 
     fun btnadd(newbook: BookStore){
-//        val newbook = BookStore(editTextBookNameContent.toString(),editTextBookPriceContent.toString())
         viewModelScope.launch {
             addNewBookToDb(newbook)
         }
@@ -123,22 +140,11 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     }
 
     /** RecyclerView Item click event */
+
     fun onRecyclerItemClick(cPosition: Int){
-        _isClick.value = true
         _myBookList.value?.get(cPosition)?.let {
             _onClickPositionData.value = it
-//            _displayBookEditTextVContent.value = it
-
         }
-        _isClick.value = false
-    }
-
-    fun dipClickItem(){
-//        _isClick.value = false
-    }
-
-    fun dispClickItemFinish(){
-        _isClick.value = false
     }
 
     //初始化->獲取資料庫所有資料
@@ -151,7 +157,7 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
 
     private suspend fun getBookListFromDatabase(): List<BookStore>?{
         val booklist = database.getBookList()
-        Log.d("我的資料庫列表= ", "$booklist")
+//        Log.d("我的資料庫列表= ", "$booklist")
         return booklist
     }
 
@@ -182,6 +188,5 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         _myBookList.value = namestring
         Log.d("return =", "$namestring")
     }
-
 
 }
