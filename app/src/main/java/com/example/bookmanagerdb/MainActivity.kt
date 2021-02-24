@@ -6,9 +6,13 @@ import android.os.Bundle
 import android.text.Editable
 import android.util.Log
 import android.view.View
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.databinding.BindingAdapter
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.InverseBindingAdapter
 import androidx.databinding.ObservableBoolean
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
@@ -54,12 +58,12 @@ class MainActivity : AppCompatActivity() {
         binding.btnAdd.setOnClickListener {
             //action to do
             val getEditInputData = inPutData()
-
-//            bookStoreViewModel.btnadd()
-            bookStoreViewModel.btnadd(getEditInputData)
+            if(getEditInputData.bookName.isNotEmpty() && getEditInputData.bookPrice.isNotEmpty()){
+                bookStoreViewModel.btnadd(getEditInputData)
+                Toast.makeText(this,"你尚未輸入資料", Toast.LENGTH_SHORT).show()
+            }
             Toast.makeText(this,"click", Toast.LENGTH_SHORT).show()
-            binding.bookNameInput.text = null
-            binding.bookPriceInput.text = null
+            clearInput()
         }
 
         // click "查詢"
@@ -73,15 +77,13 @@ class MainActivity : AppCompatActivity() {
                 // if input not empty
                 bookStoreViewModel.searchDataBase(getInputdata)
             }
-            binding.bookNameInput.text = null
-            binding.bookPriceInput.text = null
+            clearInput()
         }
 
         // click "刪除"
         binding.btnDel.setOnClickListener {
             bookStoreViewModel.btnDelete()
-            binding.bookNameInput.text = null
-            binding.bookPriceInput.text = null
+            clearInput()
         }
 
         // click "修改"
@@ -89,8 +91,7 @@ class MainActivity : AppCompatActivity() {
             val modifyString = inPutData()
             bookStoreViewModel.btnModify(modifyString)
 
-            binding.bookNameInput.text = null
-            binding.bookPriceInput.text = null
+            clearInput()
         }
 
         //click RecyclerView Item
@@ -98,6 +99,7 @@ class MainActivity : AppCompatActivity() {
                 BookStoreAdapter.SingleItemClickListener.OnItemClickListener{
                     override fun onItemClick(view: View?, position: Int) {
                         bookStoreViewModel.onRecyclerItemClick(position)
+//                        Toast.makeText(this@MainActivity,"${bookStoreViewModel.editTextBookNameContent.value}", Toast.LENGTH_SHORT ).show()
 //                        Toast.makeText(this@MainActivity,"點擊事件觸發", Toast.LENGTH_SHORT ).show()
                     }
 
@@ -117,37 +119,6 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // 當點選recyclerView item時, 在被點選item的data更新到EditText前, Enable turn off
-//        bookStoreViewModel.isClick.observe(this, Observer { newClickEvent ->
-//            if(newClickEvent) {
-//                binding.bookNameInput.isFocusable = false
-//                binding.bookPriceInput.isFocusable = false
-//            }else {
-////                binding.bookNameInput.isFocusable = true
-//                binding.bookNameInput.apply {
-//                    isFocusable = true
-//                }
-////                binding.bookPriceInput.isFocusable = true
-//                binding.bookPriceInput.apply {
-//                    isFocusable = true
-//                }
-//            }
-//        })
-
-        // when RecyclerView item點擊後 更新資料於EditText
-        bookStoreViewModel.onClickPositionData.observe(this, Observer { newPosData ->
-            Log.d("click data = ", "$newPosData")
-            binding.bookNameInput.setText(newPosData.bookName)
-            binding.bookPriceInput.setText(newPosData.bookPrice)
-//            bookStoreViewModel.dispClickItemFinish()
-
-        })
-        // when RecyclerView item點擊後 更新資料於EditText
-        bookStoreViewModel.displayBookEditTextVContent.observe(this, Observer {
-            binding.bookNameInput.setText(it.bookName)
-            binding.bookPriceInput.setText(it.bookPrice)
-
-        })
 
         // action之後 變更flag 執行UI refresh
         bookStoreViewModel.actionFinished.observe(this, Observer { newFinish ->
@@ -156,15 +127,9 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // editText Name Observer
-        bookStoreViewModel.editTextBookNameContent.observe(this,Observer{
-            Toast.makeText(this@MainActivity,it,Toast.LENGTH_SHORT).show()
-            Log.d("觀察edit", "Okokokok")
-        })
 
-        // editText Price Observer
-        bookStoreViewModel.editTextBookPriceContent.observe(this, Observer{
-            Toast.makeText(this@MainActivity,it,Toast.LENGTH_SHORT).show()
+        bookStoreViewModel.onClickPositionData.observe(this, Observer {
+            binding.invalidateAll()
         })
     }
 
@@ -174,4 +139,10 @@ class MainActivity : AppCompatActivity() {
         val getBookPrice: Editable? = binding.bookPriceInput.text
         return BookStore(getBookName.toString(),getBookPrice.toString())
     }
+
+    private fun clearInput(){
+        binding.bookNameInput.text = null
+        binding.bookPriceInput.text = null
+    }
+
 }

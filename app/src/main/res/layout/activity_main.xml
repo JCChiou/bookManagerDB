@@ -4,9 +4,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
     <data>
+
+        <import type="com.example.bookmanagerdb.util.Converter" />
         <variable
             name="bookStoreViewModle"
             type="com.example.bookmanagerdb.viewModel.BookStoreViewModel" />
+        <variable
+            name="converter"
+            type="com.example.bookmanagerdb.util.Converter" />
     </data>
     
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -50,6 +55,7 @@
             android:focusable="true"
             android:hint="@string/Hint_bookname"
             android:inputType="textPersonName"
+            android:text="@{bookStoreViewModle.onClickPositionData.bookName}"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintBottom_toBottomOf="@+id/textView"
             app:layout_constraintStart_toEndOf="@+id/textView"
@@ -65,6 +71,7 @@
             android:autofillHints="no"
             android:ems="10"
             android:hint="@string/hint_price"
+            android:text="@{bookStoreViewModle.onClickPositionData.bookPrice}"
             android:inputType="numberSigned|textPersonName"
             app:layout_constraintStart_toEndOf="@+id/textView2"
             app:layout_constraintTop_toBottomOf="@+id/bookName_input" />
@@ -124,8 +131,6 @@
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btn_del" />
-
-
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
