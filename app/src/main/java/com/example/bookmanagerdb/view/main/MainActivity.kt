@@ -113,6 +113,7 @@ class MainActivity : AppCompatActivity() {
                 BookStoreAdapter.SingleItemClickListener.OnItemClickListener{
                     override fun onItemClick(view: View?, position: Int) {
                         bookStoreViewModel.onRecyclerItemClick(position)
+                        bookStoreViewModel.setSelectLock()  //點選項目後.turn flag
 //                        Toast.makeText(this@MainActivity,"點擊事件觸發", Toast.LENGTH_SHORT ).show()
                     }
 

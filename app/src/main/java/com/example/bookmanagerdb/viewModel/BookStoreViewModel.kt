@@ -16,13 +16,14 @@ import com.example.bookmanagerdb.database.BookStoreDao
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
-class BookStoreViewModel (val database: BookStoreDao, application: Application): AndroidViewModel(application) {
+class BookStoreViewModel(val database: BookStoreDao, application: Application) :
+    AndroidViewModel(application) {
 
 
     /**====*/
     //儲存Query database的bookList資料
     private var _myBookList = MutableLiveData<List<BookStore>?>()
-    val myBookList : LiveData<List<BookStore>?>
+    val myBookList: LiveData<List<BookStore>?>
         get() = _myBookList
 
     // 儲存click Recycler View的item目標資料
@@ -32,7 +33,7 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
 
     // Recycler View click item 資料 暫存於這邊作為"修改"的依據
     private var _readyToModifyData = MutableLiveData<BookStore>()
-    val readyToModifyData : LiveData<BookStore>
+    val readyToModifyData: LiveData<BookStore>
         get() = _readyToModifyData
 
     // 完成資料庫動作要執行refreshUI 的flag
@@ -45,7 +46,8 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     val dbWriteFlag: LiveData<Boolean>
         get() = _dbWriteFlag
 
-
+    //item select lock flag
+    var selectLock: Boolean = false
 
 
     /** ===  */
@@ -56,50 +58,58 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         _dbWriteFlag.value = false  // database writable flag
     }
 
-    fun requestBookList(){
+    fun setSelectLock(){
+        selectLock = true
+    }
+
+    fun requestBookList() {
         viewModelScope.launch {
             // select * from  my_bookstore_table
             getBookListFromDatabase()
         }
     }
 
-    fun btnadd(newbook: List<BookStore>){
+    fun btnadd(newbook: List<BookStore>) {
         _dbWriteFlag.value = false  //關閉寫入flag
         viewModelScope.launch {
 //            for (i in newbook) {
-                addNewBookToDb(newbook)
+            addNewBookToDb(newbook)
 //            }
         }
     }
 
-    fun searchDataBase(data: BookStore){
+    fun searchDataBase(data: BookStore) {
         viewModelScope.launch {
             searchBookListFromDataBase(data)
         }
     }
 
-    fun btnDelete(){
+    fun btnDelete() {
         viewModelScope.launch {
-            deleteBookListFromDataBase()
+            if (selectLock) {
+                deleteBookListFromDataBase()
+            }
         }
     }
 
-    fun btnModify(data: BookStore){
-        val getModifyRes = modifyDataTemp()
+    fun btnModify(data: BookStore) {
+        if (selectLock) {
+            val getModifyRes = modifyDataTemp()
 
-        if (getModifyRes != null) {
-            data.title.let {
-                getModifyRes.title = it
-
-            }
-            data.isbn.let {
-                getModifyRes.isbn = it
-            }
-        }
-
-        viewModelScope.launch {
             if (getModifyRes != null) {
-                updateBookListToDataBase(getModifyRes)
+                data.title.let {
+                    getModifyRes.title = it
+
+                }
+                data.isbn.let {
+                    getModifyRes.isbn = it
+                }
+            }
+
+            viewModelScope.launch {
+                if (getModifyRes != null) {
+                    updateBookListToDataBase(getModifyRes)
+                }
             }
         }
     }
@@ -108,63 +118,67 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
 //        requestBookList()
 //    }
 
-    fun tableClear(){
+    fun tableClear() {
         viewModelScope.launch {
             dropTable()
         }
     }
 
-    fun setDbInsertFlagOn(){
+    fun setDbInsertFlagOn() {
         _dbWriteFlag.value = true
     }
 
     /** RecyclerView Item click event */
 
-    fun onRecyclerItemClick(cPosition: Int){
+    fun onRecyclerItemClick(cPosition: Int) {
         _myBookList.value?.get(cPosition)?.let {
             _onClickPositionData.value = it
         }
     }
 
     //初始化->獲取資料庫所有資料
-    private suspend fun getBookListFromDatabase(): List<BookStore>?{
+    private suspend fun getBookListFromDatabase(): List<BookStore>? {
         viewModelScope.launch {
             _myBookList.value = database.getBookList()
             _actionFinsihed.value = false
 
         }
+        selectLock = false
         return myBookList.value
     }
 
     private fun modifyDataTemp(): BookStore? {
-        _readyToModifyData.value = onClickPositionData.value
-        return _readyToModifyData.value
+            _readyToModifyData.value = onClickPositionData.value
+            return _readyToModifyData.value
     }
 
-    private suspend fun deleteBookListFromDataBase(){
+    private suspend fun deleteBookListFromDataBase() {
         onClickPositionData.value?.let {
             database.delete(it)
         }
         _actionFinsihed.value = true
+        selectLock = false
     }
 
-    private suspend fun addNewBookToDb(data: List<BookStore>){
+    private suspend fun addNewBookToDb(data: List<BookStore>) {
         database.insert(data)
         _actionFinsihed.value = true
     }
 
-    private suspend fun updateBookListToDataBase(data :BookStore){
+    private suspend fun updateBookListToDataBase(data: BookStore) {
         database.update(data)
         _actionFinsihed.value = true
+        selectLock = false
     }
 
-    private suspend fun searchBookListFromDataBase(data: BookStore){
-        val namestring = database.search(data.title , data.isbn)
+    private suspend fun searchBookListFromDataBase(data: BookStore) {
+        val namestring = database.search(data.title, data.isbn)
         _myBookList.value = namestring
-        Timber.d("return =", "$namestring")
+        Timber.d("return =, $namestring")
+        selectLock = false
     }
 
-    private suspend fun dropTable(){
+    private suspend fun dropTable() {
         database.clear()
         _actionFinsihed.value = true
     }
