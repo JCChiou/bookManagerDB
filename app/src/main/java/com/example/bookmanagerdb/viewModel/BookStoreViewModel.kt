@@ -14,49 +14,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.bookmanagerdb.database.BookStore
 import com.example.bookmanagerdb.database.BookStoreDao
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class BookStoreViewModel (val database: BookStoreDao, application: Application): AndroidViewModel(application) {
-
-    /** try two-way binding */
-
-//    companion object{
-//        @BindingAdapter("dataName")
-//        @JvmStatic
-//        // setter
-//        fun setDataName(target: EditText, tetx: String){
-//
-//                target.setText(tetx)
-//        }
-//
-//        @InverseBindingAdapter(attribute = "android:text", event = "TextAttrChanged")
-//        @JvmStatic
-//        //getter
-//        fun getDataName(target: EditText): String{
-//            return target.text.toString()
-//        }
-//
-//        @BindingAdapter("dataNameAttrChanged")
-//        @JvmStatic
-//        fun setListener(target: EditText, listener: InverseBindingListener?){
-//            var txt = ""
-//            target.addTextChangedListener(object : TextWatcher {
-//                override fun afterTextChanged(s: Editable?) {
-//                    if (txt != s.toString()){
-//                        listener?.onChange()
-//                        txt = s.toString()
-//                    }
-//                }
-//
-//                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-//                }
-//
-//                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//                }
-//
-//            })
-//        }
-//    }
-
 
 
     /**====*/
@@ -80,26 +40,35 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     val actionFinished: LiveData<Boolean>
         get() = _actionFinsihed
 
+    //資料庫寫入開關
+    private val _dbWriteFlag = MutableLiveData<Boolean>()
+    val dbWriteFlag: LiveData<Boolean>
+        get() = _dbWriteFlag
 
 
 
 
     /** ===  */
     init {
-        initializeBookList()
+        Timber.d("BookViewModel 初始化")
+        requestBookList()
         _actionFinsihed.value = false
+        _dbWriteFlag.value = false  // database writable flag
     }
 
-    fun showBooklist(){
+    fun requestBookList(){
         viewModelScope.launch {
             // select * from  my_bookstore_table
-            initializeBookList()
+            getBookListFromDatabase()
         }
     }
 
-    fun btnadd(newbook: BookStore){
+    fun btnadd(newbook: List<BookStore>){
+        _dbWriteFlag.value = false  //關閉寫入flag
         viewModelScope.launch {
-            addNewBookToDb(newbook)
+//            for (i in newbook) {
+                addNewBookToDb(newbook)
+//            }
         }
     }
 
@@ -119,12 +88,12 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         val getModifyRes = modifyDataTemp()
 
         if (getModifyRes != null) {
-            data.bookName.let {
-                getModifyRes.bookName = it
+            data.title.let {
+                getModifyRes.title = it
 
             }
-            data.bookPrice.let {
-                getModifyRes.bookPrice = it
+            data.isbn.let {
+                getModifyRes.isbn = it
             }
         }
 
@@ -135,8 +104,18 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         }
     }
 
-    fun refreshUI(){
-        showBooklist()
+//    fun refreshUI(){
+//        requestBookList()
+//    }
+
+    fun tableClear(){
+        viewModelScope.launch {
+            dropTable()
+        }
+    }
+
+    fun setDbInsertFlagOn(){
+        _dbWriteFlag.value = true
     }
 
     /** RecyclerView Item click event */
@@ -148,17 +127,13 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     }
 
     //初始化->獲取資料庫所有資料
-    private fun initializeBookList(){
-        viewModelScope.launch {
-            _myBookList.value = getBookListFromDatabase()
-            _actionFinsihed.value = false
-        }
-    }
-
     private suspend fun getBookListFromDatabase(): List<BookStore>?{
-        val booklist = database.getBookList()
-//        Log.d("我的資料庫列表= ", "$booklist")
-        return booklist
+        viewModelScope.launch {
+            _myBookList.value = database.getBookList()
+            _actionFinsihed.value = false
+
+        }
+        return myBookList.value
     }
 
     private fun modifyDataTemp(): BookStore? {
@@ -173,7 +148,7 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
         _actionFinsihed.value = true
     }
 
-    private suspend fun addNewBookToDb(data: BookStore){
+    private suspend fun addNewBookToDb(data: List<BookStore>){
         database.insert(data)
         _actionFinsihed.value = true
     }
@@ -184,9 +159,13 @@ class BookStoreViewModel (val database: BookStoreDao, application: Application):
     }
 
     private suspend fun searchBookListFromDataBase(data: BookStore){
-        val namestring = database.search(data.bookName , data.bookPrice)
+        val namestring = database.search(data.title , data.isbn)
         _myBookList.value = namestring
-        Log.d("return =", "$namestring")
+        Timber.d("return =", "$namestring")
     }
 
+    private suspend fun dropTable(){
+        database.clear()
+        _actionFinsihed.value = true
+    }
 }

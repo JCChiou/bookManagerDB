@@ -3,20 +3,26 @@ package com.example.bookmanagerdb.database
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.bookmanagerdb.viewModel.BookStoreViewModel
 
 @Entity(tableName = "my_bookstore_table")
 data class BookStore (
-//    @PrimaryKey(autoGenerate = true)
-//    var _id: Int = 0,
 
     @ColumnInfo(name = "book_name")
-    var bookName: String,
+    var title: String,
 
     @ColumnInfo(name = "book_price")
-    var bookPrice: String
+    var isbn: String
 
     ){
     @PrimaryKey(autoGenerate = true)
-//    @ColumnInfo(name = "id")
     var _id: Int? = null
 }
+
+
+data class Mydata(
+    val code: Int,
+    val `data`: List<BookStore>,
+    val status: String,
+    val total: Int
+)

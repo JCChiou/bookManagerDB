@@ -5,19 +5,16 @@
     xmlns:tools="http://schemas.android.com/tools">
     <data>
 
-        <import type="com.example.bookmanagerdb.util.Converter" />
         <variable
             name="bookStoreViewModle"
             type="com.example.bookmanagerdb.viewModel.BookStoreViewModel" />
-        <variable
-            name="converter"
-            type="com.example.bookmanagerdb.util.Converter" />
+
     </data>
     
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".MainActivity">
+        tools:context=".view.main.MainActivity">
 
         <TextView
             android:id="@+id/textView"
@@ -55,7 +52,7 @@
             android:focusable="true"
             android:hint="@string/Hint_bookname"
             android:inputType="textPersonName"
-            android:text="@{bookStoreViewModle.onClickPositionData.bookName}"
+            android:text="@{bookStoreViewModle.onClickPositionData.title}"
             android:textAppearance="@style/TextAppearance.AppCompat.Medium"
             app:layout_constraintBottom_toBottomOf="@+id/textView"
             app:layout_constraintStart_toEndOf="@+id/textView"
@@ -71,7 +68,7 @@
             android:autofillHints="no"
             android:ems="10"
             android:hint="@string/hint_price"
-            android:text="@{bookStoreViewModle.onClickPositionData.bookPrice}"
+            android:text="@{bookStoreViewModle.onClickPositionData.isbn}"
             android:inputType="numberSigned|textPersonName"
             app:layout_constraintStart_toEndOf="@+id/textView2"
             app:layout_constraintTop_toBottomOf="@+id/bookName_input" />
@@ -126,7 +123,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recdisp"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"

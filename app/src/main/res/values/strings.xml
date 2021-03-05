@@ -8,5 +8,11 @@
     <string name="Hint_bookname">請輸入書名</string>
     <string name="text_price">價格 :</string>
     <string name="text_bookname">書名 :</string>
+    <string name="adapter_title">書名 : $d%s </string>
+    <string name="FetchFromApi"> 透過API新增 </string>
+    <string name="FetchCount">選擇資料筆數 : </string>
+    <string name="dialog_fonfirm">確定</string>
+    <string name="dialog_cancel">取消</string>
+    <string name="drop_table">刪除資料表</string>
 
 </resources>

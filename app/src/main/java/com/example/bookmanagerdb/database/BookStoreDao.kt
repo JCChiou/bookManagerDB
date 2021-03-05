@@ -6,7 +6,7 @@ import androidx.room.*
 interface BookStoreDao {
 
     @Insert
-    suspend fun insert(item: BookStore)
+    suspend fun insert(item: List<BookStore>)
 
     @Update
     suspend fun update(item: BookStore) : Int
