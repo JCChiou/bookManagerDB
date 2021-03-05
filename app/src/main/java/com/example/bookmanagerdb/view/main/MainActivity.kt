@@ -1,16 +1,13 @@
 package com.example.bookmanagerdb.view.main
 
 import android.annotation.SuppressLint
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.Editable
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.*
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -20,16 +17,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bookmanagerdb.BuildConfig
 import com.example.bookmanagerdb.R
-import com.example.bookmanagerdb.api.BookApi
 import com.example.bookmanagerdb.database.*
 import com.example.bookmanagerdb.databinding.ActivityMainBinding
-import com.example.bookmanagerdb.view.main.remoteBook.ApiBookViewModel
+import com.example.bookmanagerdb.viewModel.ApiBookViewModel
 import com.example.bookmanagerdb.viewModel.BookStoreAdapter.BookStoreAdapter
+import com.example.bookmanagerdb.viewModel.BookStoreAdapter.FetchCountAdapter
 import com.example.bookmanagerdb.viewModel.BookStoreViewModel
 import com.example.bookmanagerdb.viewModel.BookStoreViewModelFactory
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
@@ -106,8 +100,12 @@ class MainActivity : AppCompatActivity() {
         // click "修改"
         binding.btnModify.setOnClickListener {
             val modifyString = inPutData()[0]
-            bookStoreViewModel.btnModify(modifyString)
-            clearInput()
+            if (modifyString.title.isNotEmpty() && modifyString.isbn.isNotEmpty()) {
+                bookStoreViewModel.btnModify(modifyString)
+                clearInput()
+            }else{
+                Toast.makeText(this,"請重新選取欲修改資料", Toast.LENGTH_SHORT).show()
+            }
         }
 
         //click RecyclerView Item
@@ -230,20 +228,15 @@ class MainActivity : AppCompatActivity() {
             newDialog.dismiss()
         }
         setSpinnerAdapter(view)
+
+
     }
 
     private fun setSpinnerAdapter(myView: View){
         val spinner = myView.findViewById<Spinner>(R.id.spinner)
         Timber.d("$spinner")
-        val item = mutableListOf<Int>()
-        //給使用者選擇要獲取幾筆資料
-        for (i in 1..100){
-            item.add(i)
-        }
-
-        val spinnerAdapter = ArrayAdapter(this,R.layout.myspinner, item)
+        val spinnerAdapter = FetchCountAdapter(this, myView).setAdapter()
         spinner.adapter = spinnerAdapter
-
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener{
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -251,7 +244,7 @@ class MainActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                apiBookViewModel.sendFetchDataCount(item[position])
+                apiBookViewModel.sendFetchDataCount(position + 1)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }

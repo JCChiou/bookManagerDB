@@ -1,4 +1,4 @@
-package com.example.bookmanagerdb.view.main.remoteBook
+package com.example.bookmanagerdb.viewModel
 
 
 import androidx.lifecycle.LiveData
