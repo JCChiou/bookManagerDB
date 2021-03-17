@@ -12,7 +12,10 @@ data class BookStore (
     var title: String,
 
     @ColumnInfo(name = "book_price")
-    var isbn: String
+    var isbn: String,
+
+    @ColumnInfo(name = "image")
+    var image: String
 
     ){
     @PrimaryKey(autoGenerate = true)
