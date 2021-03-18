@@ -1,5 +1,6 @@
 package com.example.bookmanagerdb.database
 
+import android.graphics.Bitmap
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -15,7 +16,7 @@ data class BookStore (
     var isbn: String,
 
     @ColumnInfo(name = "image")
-    var image: String
+    var image: String?
 
     ){
     @PrimaryKey(autoGenerate = true)

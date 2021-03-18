@@ -3,6 +3,7 @@ package com.example.bookmanagerdb.view.main
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore.Images.Media.getBitmap
 import android.text.Editable
 import android.view.Menu
 import android.view.MenuItem
@@ -13,6 +14,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bookmanagerdb.BuildConfig
@@ -56,9 +58,10 @@ class MainActivity : AppCompatActivity() {
         val adapter = BookStoreAdapter()
         myRecyclerView = binding.recdisp
         val linearLayoutManager = LinearLayoutManager(this)
-        myRecyclerView.layoutManager = linearLayoutManager
-        //使用預設分隔線
-        myRecyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
+        myRecyclerView.layoutManager = GridLayoutManager(this,3)
+        //使用預設分隔線內建
+        //3/17改用GridLayoutManager,沒有分隔線
+//        myRecyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
         myRecyclerView.adapter = adapter
         /** ================= */
 
@@ -124,6 +127,7 @@ class MainActivity : AppCompatActivity() {
                 }))
         /** ===================== */
         /** 觀察者 區域 */
+
         // 撈取資料庫內容
         bookStoreViewModel.myBookList.observe(this, Observer { newList ->
             newList?.let {
@@ -147,9 +151,11 @@ class MainActivity : AppCompatActivity() {
 
         //faker Api return data
         apiBookViewModel.response.observe(this, Observer {
-            Timber.d("觀察者資料 = ${it.data}")
+            Timber.d("觀察者資料 = ${it}")
+
         })
 
+        //從API取得資料
         apiBookViewModel.dataFlag.observe(this, Observer {
             //呼叫BookViewModel 設定DB寫如Flag打開
             if (apiBookViewModel.dataFlag.value == true){
@@ -164,7 +170,6 @@ class MainActivity : AppCompatActivity() {
                 if (apiData != null) {
                     bookStoreViewModel.btnadd(apiData)
                     apiBookViewModel.setDataFlagOff()
-//                    apiBookViewModel.clearFetchData()
                 }
             }
         })
@@ -175,7 +180,8 @@ class MainActivity : AppCompatActivity() {
     private fun inPutData(): List<BookStore>{
         val getBookName: Editable? = binding.bookNameInput.text
         val getBookPrice: Editable? = binding.bookPriceInput.text
-        val data = arrayListOf(BookStore(getBookName.toString(),getBookPrice.toString()))
+        //傳遞參數增加一組url,預設為null
+        val data = arrayListOf(BookStore(getBookName.toString(),getBookPrice.toString(),null))
         return data
 //        return BookStore(getBookName.toString(),getBookPrice.toString())
     }
