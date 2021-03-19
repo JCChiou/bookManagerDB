@@ -1,10 +1,12 @@
 package com.example.bookmanagerdb.view.main
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore.Images.Media.getBitmap
 import android.text.Editable
+import android.util.LruCache
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -36,6 +38,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         // debug mode use Timber
         if(BuildConfig.DEBUG){
             Timber.plant(   Timber.DebugTree())

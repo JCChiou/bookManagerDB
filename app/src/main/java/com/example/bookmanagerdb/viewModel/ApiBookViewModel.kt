@@ -62,7 +62,6 @@ class ApiBookViewModel : ViewModel() {
                         BookApi.retrofitService.getAPIData(it)
                     }
                 }
-
                 _response.setValue(data)
                 _dataFlag.setValue(true) //送出Api request flag
                 Timber.d("try block execute")
