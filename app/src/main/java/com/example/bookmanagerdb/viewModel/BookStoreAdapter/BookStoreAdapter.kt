@@ -5,28 +5,23 @@ import android.graphics.BitmapFactory
 import android.view.*
 import android.widget.ImageView
 import android.widget.TextView
-
 import androidx.core.view.GestureDetectorCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.bookmanagerdb.R
+import com.example.bookmanagerdb.api.BookApi
 import com.example.bookmanagerdb.database.BookStore
 import com.example.bookmanagerdb.util.ImageLoader
 import kotlinx.coroutines.*
-
 import timber.log.Timber
 import java.net.HttpURLConnection
 import java.net.URL
-
-import kotlin.collections.HashMap
 
 class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
     init {
     }
 
+    //實例化 圖片快取
     val mLoader = ImageLoader()
-
-    //存放img在recycler view的pos
-    var mLoadingMap = HashMap<String, Bitmap>()
 
     var data = listOf<BookStore>()
         set(value) {
@@ -38,16 +33,22 @@ class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
         val book_disp: TextView = itemView.findViewById(R.id.recycler_disp_name)
         val price_disp: TextView = itemView.findViewById(R.id.recycler_disp_Price)
         val img_disp: ImageView = itemView.findViewById(R.id.api_Image)
-        fun bindData(data: BookStore, pos: Int) {
+
+        /**
+         * 在recycler View執行binding的部分使用多載，
+         */
+
+        fun bindData(data: BookStore) {
             Timber.d("綁定data")
             book_disp.text = data.title
             price_disp.text = data.isbn
-//            img_disp.setImageBitmap(mLoader.getBitmapFromMemCache(pos.toString()))
         }
 
-        fun bindImg(Bitmap: Bitmap) {
-            Timber.d("綁定IMG")
-            img_disp.setImageBitmap(Bitmap)
+        fun bindData(data: BookStore, bitmap: Bitmap){
+            Timber.d("綁定data & image")
+            book_disp.text = data.title
+            price_disp.text = data.isbn
+            img_disp.setImageBitmap(bitmap)
         }
     }
 
@@ -62,27 +63,29 @@ class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        /**
-         * 在這邊處理圖片下載，用position對應bitmap的hashMap存放
-         *
-         * */
-        Timber.d("呼叫onBindViewHolder")
-        val key: String = "$position"
-        val b: Bitmap? = mLoader.getBitmapFromMemCache(key)
-        if (b == null) { //緩存沒有資料
-            Timber.d("key = null，從網路解析圖片")
-            //從網路下載
-            getBitmap(data[position].image.toString(), position)
-        } else { //緩存有資料
-            Timber.d("有資料，從快取拿圖片")
-            holder.bindImg(b)
-        }
         val item = data[position]
-        holder.bindData(item, position)
+
+        val key: String = "${data[position]._id}" //這邊使用資料庫的primary key當作快取的key
+        val bmp: Bitmap? = mLoader.getBitmapFromMemCache(key)
+        if (bmp == null) { //快取沒有資料
+            Timber.d("快取是空的，從網路解析圖片")
+            //從網路下載
+            getBitmap(data[position].image.toString(), key, position)
+            holder.bindData(item)
+        } else { //快取有資料
+            Timber.d("有資料，從快取拿圖片")
+            holder.bindData(item, bmp)
+        }
     }
 
-    private fun getBitmap(url: String, pos: Int) {
+    //當user刪除一筆資料，一併將該筆資料的快取刪除
+    fun removeCache(key: String){
+        mLoader.removeBitmapFromMenCache(key)
+    }
+
+    private fun getBitmap(url: String, key: String, pos : Int) {
         var result: Bitmap?
+        //做bitmap decode ＆ update UI
         GlobalScope.launch(Dispatchers.Main) {
             try {
                 val job: Deferred<Bitmap> = async(Dispatchers.IO) {
@@ -91,12 +94,11 @@ class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
                     connection.doInput = true
                     connection.connect()
                     val ins = connection.inputStream
-                    Timber.d(" 開始decode")
+//                    val ins = BookApi.retrofitService.getImg() //圖片卡在ＧＳＯＮ轉換錯誤
                     BitmapFactory.decodeStream(ins)
                 }
                 result = job.await()
-                Timber.d("等到結果了，result = $result")
-                mLoader.addBitmapToMemoryCache(pos.toString(), result!!)
+                result?.let { mLoader.addBitmapToMemoryCache(key, it) }
 
             } catch (e: Exception) {
                 Timber.d("error = ${e.message}")

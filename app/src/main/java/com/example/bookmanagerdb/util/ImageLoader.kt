@@ -28,4 +28,8 @@ class ImageLoader() {
     fun getBitmapFromMemCache(key: String): Bitmap?{
         return memoryCache.get(key)
     }
+
+    fun removeBitmapFromMenCache(key: String){
+        memoryCache.remove(key)
+    }
 }

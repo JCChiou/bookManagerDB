@@ -30,6 +30,7 @@ import com.example.bookmanagerdb.viewModel.BookStoreViewModel
 import com.example.bookmanagerdb.viewModel.BookStoreViewModelFactory
 import timber.log.Timber
 
+const val IMG_URL = "http://placeimg.com/480/640/any"
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     lateinit var myRecyclerView: RecyclerView
@@ -178,6 +179,17 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+        bookStoreViewModel.onClickPositionData.observe(this, Observer { newPos ->
+            val delCachePos = newPos._id.toString()
+            if (bookStoreViewModel.delCache.value == true){
+                Timber.d("pos = $newPos")
+                //執行刪除快取的動作
+                adapter.removeCache(delCachePos)
+                bookStoreViewModel.setDelCacheFlagOff()
+            }
+
+        })
+
     }
 
     // get EditText data
@@ -185,7 +197,7 @@ class MainActivity : AppCompatActivity() {
         val getBookName: Editable? = binding.bookNameInput.text
         val getBookPrice: Editable? = binding.bookPriceInput.text
         //傳遞參數增加一組url,預設為null
-        val data = arrayListOf(BookStore(getBookName.toString(),getBookPrice.toString(),null))
+        val data = arrayListOf(BookStore(getBookName.toString(),getBookPrice.toString(), IMG_URL))
         return data
 //        return BookStore(getBookName.toString(),getBookPrice.toString())
     }

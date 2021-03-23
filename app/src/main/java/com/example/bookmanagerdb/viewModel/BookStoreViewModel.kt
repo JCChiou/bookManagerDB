@@ -46,6 +46,11 @@ class BookStoreViewModel(val database: BookStoreDao, application: Application) :
     val dbWriteFlag: LiveData<Boolean>
         get() = _dbWriteFlag
 
+
+    private val _delCache = MutableLiveData<Boolean>()
+    val delCache: LiveData<Boolean>
+        get() = _delCache
+
     //item select lock flag
     var selectLock: Boolean = false
 
@@ -128,6 +133,10 @@ class BookStoreViewModel(val database: BookStoreDao, application: Application) :
         _dbWriteFlag.value = true
     }
 
+    fun setDelCacheFlagOff(){
+        _delCache.value = false
+    }
+
     /** RecyclerView Item click event */
 
     fun onRecyclerItemClick(cPosition: Int) {
@@ -155,6 +164,7 @@ class BookStoreViewModel(val database: BookStoreDao, application: Application) :
     private suspend fun deleteBookListFromDataBase() {
         onClickPositionData.value?.let {
             database.delete(it)
+            _delCache.value = true // 刪除點選資料後，開啟刪除快取的旗標
         }
         _actionFinsihed.value = true
         selectLock = false
