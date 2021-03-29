@@ -1,5 +1,6 @@
 package com.example.bookmanagerdb.api
 
+import android.graphics.Bitmap
 import android.text.TextUtils
 import com.example.bookmanagerdb.database.Mydata
 import com.google.gson.GsonBuilder
@@ -31,13 +32,13 @@ private val okHttpClient = OkHttpClient.Builder().apply {
 }
     .build()
 
-val gson = GsonBuilder()
-    .setLenient()
-    .create()
+//val gson = GsonBuilder()
+//    .setLenient()
+//    .create()
 
 private val retrofit = Retrofit.Builder()
     .baseUrl(BASE_URL)
-    .addConverterFactory(GsonConverterFactory.create(gson))
+    .addConverterFactory(GsonConverterFactory.create())
     .client(okHttpClient)
     .build()
 
@@ -45,9 +46,9 @@ interface IApiService {
     @GET("books?")
     suspend fun getAPIData(@Query("_quantity") count: String): Mydata
 
-    @Headers("baseUrl:two")
-    @GET("/")
-    suspend fun getImg(): ByteArrayInputStream
+//    @Headers("baseUrl:two")
+    @GET("http://placeimg.com/480/640/any") //如果方法內部有完整的scheme,會替換掉原本的baseURL達到多個baseURL切換
+    suspend fun getImg(): ResponseBody
 }
 
 object BookApi {
@@ -61,7 +62,7 @@ object BookApi {
 //        hashMap.put("one", "https://fakerapi.it/api/v1/")
 //        hashMap.put("two", "http://placeimg.com/480/640/any")
 //    }
-//
+
 //
 //    override fun intercept(chain: Interceptor.Chain): Response {
 //        Timber.d("攔截攔截攔截攔截攔截攔截攔截攔截攔截攔截")

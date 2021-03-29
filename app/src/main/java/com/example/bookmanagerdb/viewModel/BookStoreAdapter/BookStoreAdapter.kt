@@ -17,11 +17,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
-    init {
-    }
-
-    //實例化 圖片快取
-    val mLoader = ImageLoader()
 
     var data = listOf<BookStore>()
         set(value) {
@@ -29,6 +24,15 @@ class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
             notifyDataSetChanged()
         }
 
+    var hashMap = HashMap<String, Bitmap>()
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    init {
+//        Timber.d("mLoader in adapter= $mLoader")
+    }
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val book_disp: TextView = itemView.findViewById(R.id.recycler_disp_name)
         val price_disp: TextView = itemView.findViewById(R.id.recycler_disp_Price)
@@ -66,44 +70,13 @@ class BookStoreAdapter : RecyclerView.Adapter<BookStoreAdapter.ViewHolder>() {
         val item = data[position]
 
         val key: String = "${data[position]._id}" //這邊使用資料庫的primary key當作快取的key
-        val bmp: Bitmap? = mLoader.getBitmapFromMemCache(key)
+        val bmp = hashMap[key]
         if (bmp == null) { //快取沒有資料
-            Timber.d("快取是空的，從網路解析圖片")
-            //從網路下載
-            getBitmap(data[position].image.toString(), key, position)
+            Timber.d("快取是空的，先綁定資料")
             holder.bindData(item)
-        } else { //快取有資料
-            Timber.d("有資料，從快取拿圖片")
+        } else { //快取有資料，綁定圖片＆資料
             holder.bindData(item, bmp)
-        }
-    }
 
-    //當user刪除一筆資料，一併將該筆資料的快取刪除
-    fun removeCache(key: String){
-        mLoader.removeBitmapFromMenCache(key)
-    }
-
-    private fun getBitmap(url: String, key: String, pos : Int) {
-        var result: Bitmap?
-        //做bitmap decode ＆ update UI
-        GlobalScope.launch(Dispatchers.Main) {
-            try {
-                val job: Deferred<Bitmap> = async(Dispatchers.IO) {
-                    val myurl = URL(url)
-                    val connection = myurl.openConnection() as HttpURLConnection
-                    connection.doInput = true
-                    connection.connect()
-                    val ins = connection.inputStream
-//                    val ins = BookApi.retrofitService.getImg() //圖片卡在ＧＳＯＮ轉換錯誤
-                    BitmapFactory.decodeStream(ins)
-                }
-                result = job.await()
-                result?.let { mLoader.addBitmapToMemoryCache(key, it) }
-
-            } catch (e: Exception) {
-                Timber.d("error = ${e.message}")
-            }
-            notifyItemChanged(pos) //update UI in main Thread
         }
     }
 

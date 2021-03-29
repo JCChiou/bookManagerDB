@@ -39,12 +39,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
         // debug mode use Timber
         if(BuildConfig.DEBUG){
             Timber.plant(   Timber.DebugTree())
         }
+
+        val dpi = resources.displayMetrics.densityDpi
+        val heigth = resources.displayMetrics.heightPixels
+        val width = resources.displayMetrics.widthPixels
+        Timber.d("device's DPI = $dpi, heigth = $heigth, width = $width")
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         /** get database Instance & ViewModel instance */
@@ -137,8 +140,10 @@ class MainActivity : AppCompatActivity() {
         bookStoreViewModel.myBookList.observe(this, Observer { newList ->
             newList?.let {
                 //更新給adapter的data
-//                Log.d("data=", "$it")
                 adapter.data = it
+                //要判斷是否為新增資料 在執行下載圖片，否則直接由快取顯示
+                apiBookViewModel.getImgFromUrl(it)
+
             }
         })
 
@@ -158,6 +163,15 @@ class MainActivity : AppCompatActivity() {
         apiBookViewModel.response.observe(this, Observer {
             Timber.d("觀察者資料 = ${it}")
 
+        })
+
+        apiBookViewModel.imgResult.observe(this, Observer{
+            Timber.d("Img資料更新 = ${it}")
+            it.let {
+                if (it != null) {
+                    adapter.hashMap = it
+                }
+            }
         })
 
         //從API取得資料
@@ -181,15 +195,16 @@ class MainActivity : AppCompatActivity() {
 
         bookStoreViewModel.onClickPositionData.observe(this, Observer { newPos ->
             val delCachePos = newPos._id.toString()
+            Timber.d("選取了$newPos, _id = ${newPos._id}")
+        })
+        bookStoreViewModel.delCache.observe(this, Observer{
+            val delPos = bookStoreViewModel.onClickPositionData.value?._id.toString()
             if (bookStoreViewModel.delCache.value == true){
-                Timber.d("pos = $newPos")
-                //執行刪除快取的動作
-                adapter.removeCache(delCachePos)
+                Timber.d("delPos = $delPos")
+                apiBookViewModel.removeCache(delPos)
                 bookStoreViewModel.setDelCacheFlagOff()
             }
-
         })
-
     }
 
     // get EditText data
